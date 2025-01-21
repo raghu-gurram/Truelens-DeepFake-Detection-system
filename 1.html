@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepFake Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            width: 100%;
+            padding: 1rem;
+            background-color: #007bff;
+            color: #fff;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 1rem;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        input[type="file"] {
+            padding: 0.5rem;
+        }
+
+        button {
+            padding: 0.75rem;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #results {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #e9ecef;
+            border-radius: 8px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>DeepFake Detection Tool</h1>
+    </header>
+
+    <div class="container">
+        <form id="uploadForm">
+            <label for="videoInput">Upload your video (MP4 format):</label>
+            <input type="file" id="videoInput" accept="video/mp4" required>
+            <button type="submit">Analyze Video</button>
+        </form>
+
+        <div id="results" class="hidden">
+            <h2>Analysis Results:</h2>
+            <p id="resultText">Processing...</p>
+            <video id="uploadedVideo" controls class="hidden" width="100%"></video>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const resultsDiv = document.getElementById('results');
+        const resultText = document.getElementById('resultText');
+        const uploadedVideo = document.getElementById('uploadedVideo');
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const videoInput = document.getElementById('videoInput');
+
+            if (videoInput.files.length === 0) {
+                alert('Please upload a video file.');
+                return;
+            }
+
+            const file = videoInput.files[0];
+
+            // Display the video (for demo purposes)
+            const videoURL = URL.createObjectURL(file);
+            uploadedVideo.src = videoURL;
+            uploadedVideo.classList.remove('hidden');
+
+            // Simulate analysis results (replace with actual backend call)
+            resultsDiv.classList.remove('hidden');
+            resultText.textContent = "The video analysis is complete. The video is genuine.";
+
+            // Cleanup URL object after the video is loaded
+            uploadedVideo.onload = () => URL.revokeObjectURL(videoURL);
+        });
+    </script>
+</body>
+</html>

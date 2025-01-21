@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Prediction</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Upload Image for Real/Fake Prediction</h1>
+    <input type="file" id="imageInput" accept="image/*">
+    <button onclick="predict()">Predict</button>
+    <p id="result"></p>
+
+    <script>
+        function predict() {
+            const input = document.getElementById('imageInput');
+            if (!input.files.length) {
+                alert('Please select an image first.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', input.files[0]);
+
+            fetch('http://127.0.0.1:5000/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById('result').textContent = 'Error: ' + data.error;
+                } else {
+                    document.getElementById('result').textContent = 
+                        data.prediction === 1 ? "The image is fake." : "The image is real.";
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while processing the image.');
+            });
+        }
+    </script>
+</body>
+</html>
