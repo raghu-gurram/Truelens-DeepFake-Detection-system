@@ -1,34 +1,38 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import JSONResponse
 import tensorflow as tf
 import numpy as np
 from PIL import Image
 import io
+import uvicorn
 
-app = Flask(__name__)
+app = FastAPI()
 
 # Load the model
 model = tf.keras.models.load_model('models/xception_model.h5')
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file provided'}), 400
+def preprocess_image(file: bytes) -> np.ndarray:
+    image = Image.open(io.BytesIO(file)).convert("RGB")
+    image = image.resize((299, 299))
+    image_array = np.array(image) / 255.0
+    return np.expand_dims(image_array, axis=0)
 
-    file = request.files['file']
+@app.post("/predict")
+async def predict(file: UploadFile = File(...)):
     if not file:
-        return jsonify({'error': 'No file provided'}), 400
+        raise HTTPException(status_code=400, detail="No file uploaded")
 
-    # Process the image
-    image = Image.open(io.BytesIO(file.read()))
-    image = image.resize((299, 299))  # Resize according to your model's input size
-    image_array = np.array(image) / 255.0  # Normalize the image if needed
-    image_array = np.expand_dims(image_array, axis=0)
+    try:
+        image_bytes = await file.read()
+        image_array = preprocess_image(image_bytes)
 
-    # Predict
-    prediction = model.predict(image_array)
-    result = {'prediction': int(prediction[0][0] > 0.5)}  # Adjust threshold based on your model
+        # Predict
+        prediction = model.predict(image_array)
+        result = {"prediction": int(prediction[0][0] > 0.5)}
+        return JSONResponse(content=result)
 
-    return jsonify(result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Prediction error: {str(e)}")
 
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    uvicorn.run("your_script_name:app", host="0.0.0.0", port=8000, reload=True)
